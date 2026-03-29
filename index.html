@@ -113,8 +113,10 @@
 
 <script>
     // === КОНФІГУРАЦІЯ ===
-    // ЗАМІНИ ЦЕ НА СВІЙ САЙТ (без https://)
-    const targetUrl = "cloud.uislab.com/ords/f?p=2900:LOGIN_DESKTOP::::::"; 
+    // Повне посилання
+    const fullTargetUrl = "https://cloud.uislab.com/ords/f?p=2900:LOGIN_DESKTOP::::::"; 
+    // Тільки домен і шлях для Intent (без https://)
+    const cleanUrl = "cloud.uislab.com/ords/f?p=2900:LOGIN_DESKTOP::::::";
     // ===================
 
     const isAndroid = /Android/i.test(navigator.userAgent);
@@ -124,41 +126,42 @@
     const statusText = document.getElementById('status-text');
     const iosOverlay = document.getElementById('ios-overlay');
 
-    // Функція приховування оверлею при кліку на нього
     function hideOverlay() {
         iosOverlay.style.display = 'none';
     }
 
-    // Основна логіка при завантаженні
     window.onload = function() {
         if (isAndroid) {
             statusText.innerText = "Спробуємо відкрити сайт автоматично...";
-            // Спроба Android Intent
-            const intentUrl = `intent://${targetUrl}#Intent;scheme=https;action=android.intent.action.VIEW;end`;
             
-            // На кнопці теж залишаємо intent на випадок збою автомата
-            openBtn.onclick = function() {
+            // Спеціальний формат Intent для складних URL
+            const intentUrl = `intent://${cleanUrl}#Intent;scheme=https;action=android.intent.action.VIEW;package=com.android.chrome;end`;
+            // Якщо Chrome немає, спробуємо загальний браузер:
+            const fallbackIntent = `intent://${cleanUrl}#Intent;scheme=https;action=android.intent.action.VIEW;end`;
+
+            const tryOpen = () => {
+                // Намагаємося відкрити спочатку через Chrome
                 window.location.href = intentUrl;
+                // Якщо через 2 секунди ми все ще тут - пробуємо загальний редирект
+                setTimeout(() => {
+                    window.location.href = fallbackIntent;
+                }, 2000);
             };
 
-            // Авто-редирект через півсекунди
-            setTimeout(() => {
-                window.location.href = intentUrl;
-            }, 500);
+            openBtn.onclick = tryOpen;
+            setTimeout(tryOpen, 500);
 
         } else if (isIOS) {
             statusText.innerText = "Telegram обмежує роботу сайтів.";
-            // На iOS кнопка НЕ відкриває сайт, а показує інструкцію
             openBtn.innerText = "ЯК ВІДКРИТИ";
             openBtn.onclick = function(e) {
-                e.preventDefault(); // Забороняємо перехід
-                iosOverlay.style.display = 'block'; // Показуємо стрілку
+                e.preventDefault();
+                iosOverlay.style.display = 'block';
             };
         } else {
-            // Для ПК або інших систем — звичайна кнопка-посилання
             statusText.innerText = "Натисніть кнопку нижче.";
             openBtn.onclick = function() {
-                window.location.href = "https://" + targetUrl;
+                window.location.href = fullTargetUrl;
             };
         }
     };
