@@ -5,160 +5,86 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Відкриття сайту</title>
     <style>
-        /* === СТИЛЬ З КАРТИНКИ (Темна тема) === */
         body { 
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
-            display: flex; 
-            align-items: center; 
-            justify-content: center; 
-            height: 100vh; 
-            margin: 0; 
-            background-color: #1e2124; /* Дуже темний фон сторінки */
-            text-align: center; 
-            overflow: hidden; 
+            display: flex; align-items: center; justify-content: center; 
+            height: 100vh; margin: 0; background-color: #1e2124; text-align: center; 
         }
-        
-        /* Картка */
         .card { 
-            padding: 40px 30px; 
-            background-color: #16181b; /* Трохи світліша темна картка */
-            border-radius: 20px; 
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2); 
-            max-width: 300px; 
-            width: 85%;
-            position: relative;
-            z-index: 1;
+            padding: 40px 30px; background-color: #16181b; border-radius: 20px; 
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2); max-width: 300px; width: 85%;
         }
-        
-        /* Заголовок (Білий) */
-        h3 { 
-            margin-top: 0; 
-            margin-bottom: 15px; 
-            font-size: 1.5em; 
-            font-weight: 700; 
-            color: #ffffff; 
-        }
-        
-        /* Текст підказки (Світло-сірий) */
-        p { 
-            font-size: 0.95em; 
-            color: #afb1b4; 
-            line-height: 1.4; 
-            margin-bottom: 0; 
-            font-weight: 400;
-        }
-        
-        /* Синя кнопка (з картинки) */
+        h3 { margin-top: 0; margin-bottom: 15px; font-size: 1.5em; color: #ffffff; }
+        p { font-size: 0.95em; color: #afb1b4; margin-bottom: 0; }
         .btn { 
-            display: block; 
-            padding: 16px 20px; 
-            background-color: #0077b5; /* Точний синій колір */
-            color: white !important; 
-            text-decoration: none; 
-            border-radius: 12px; 
-            font-weight: 600; 
-            margin-top: 30px;
-            cursor: pointer;
-            border: none;
-            width: 100%;
-            font-size: 0.9em;
-            text-transform: uppercase; /* Всі букви великі */
-            letter-spacing: 0.5px; /* Невеликий відступ між буквами */
-            transition: background 0.3s;
+            display: block; padding: 16px 20px; background-color: #0077b5; 
+            color: white !important; text-decoration: none; border-radius: 12px; 
+            font-weight: 600; margin-top: 30px; cursor: pointer; border: none; 
+            width: 100%; font-size: 0.9em; text-transform: uppercase; 
         }
-        .btn:active { background-color: #006699; }
-
-        /* === Стилі для стрілочки (iOS) - залишаємо, але підлаштовуємо кольори === */
         #ios-overlay {
-            display: none; 
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0, 0, 0, 0.9);
-            color: white; z-index: 100;
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.9); color: white; z-index: 100;
         }
         .arrow { position: absolute; top: 10px; right: 15px; font-size: 60px; animation: bounce 1s infinite; }
         .instruction { position: absolute; top: 80px; right: 20px; left: 20px; font-size: 1.2em; text-align: right; }
-        .instruction b { color: #55ceff; }
         @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
     </style>
 </head>
 <body>
 
-<div class="card" id="main-card">
-    <h3>Відкриваємо сайт...</h3>
+<div class="card">
+    <h3 id="main-title">Відкриваємо сайт...</h3>
     <p id="status-text">Натисніть кнопку нижче.</p>
-    
     <button id="open-link" class="btn">ПЕРЕЙТИ ДО САЙТУ</button>
 </div>
 
 <div id="ios-overlay" onclick="this.style.display='none'">
     <div class="arrow">↗</div>
-    <div class="instruction">
-        Натисніть сюди <b>(⋯)</b><br>
-        та оберіть<br>
-        <b>«Відкрити у браузері»</b>
-    </div>
+    <div class="instruction">Натисніть сюди <b>(⋯)</b><br>та оберіть<br><b>«Відкрити у браузері»</b></div>
 </div>
 
 <script>
-    // === КОНФІГУРАЦІЯ ===
-    // Повне посилання
     const fullTargetUrl = "https://cloud.uislab.com/ords/f?p=2900:LOGIN_DESKTOP::::::"; 
-    // Тільки домен і шлях для Intent (без https://)
     const cleanUrl = "cloud.uislab.com/ords/f?p=2900:LOGIN_DESKTOP::::::";
-    // ===================
 
     const isAndroid = /Android/i.test(navigator.userAgent);
     const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
+    const isTelegram = /Telegram/i.test(navigator.userAgent);
     
     const openBtn = document.getElementById('open-link');
     const statusText = document.getElementById('status-text');
-    const iosOverlay = document.getElementById('ios-overlay');
+    const mainTitle = document.getElementById('main-title');
 
     window.onload = function() {
         if (isAndroid) {
-            statusText.innerText = "Спробуємо відкрити сайт автоматично...";
-            const intentUrl = `intent://${cleanUrl}#Intent;scheme=https;action=android.intent.action.VIEW;package=com.android.chrome;end`;
-            const fallbackIntent = `intent://${cleanUrl}#Intent;scheme=https;action=android.intent.action.VIEW;end`;
-
-            const tryOpen = () => {
-                window.location.href = intentUrl;
-                setTimeout(() => { window.location.href = fallbackIntent; }, 2000);
-            };
-
-            openBtn.onclick = tryOpen;
-            setTimeout(tryOpen, 500);
+            // УНІВЕРСАЛЬНИЙ INTENT (без прив'язки до Chrome)
+            // action=android.intent.action.VIEW відкриє браузер за замовчуванням
+            const intentUrl = `intent://${cleanUrl}#Intent;scheme=https;action=android.intent.action.VIEW;end`;
+            
+            openBtn.onclick = () => { window.location.href = intentUrl; };
+            setTimeout(() => { window.location.href = intentUrl; }, 500);
 
         } else if (isIOS) {
-            // Перевірка: чи ми всередині WebView Telegram
-            const isTelegram = /Telegram/i.test(navigator.userAgent);
-
             if (isTelegram) {
-                // Якщо в WebView - показуємо інструкцію зі стрілкою
-                statusText.innerText = "Telegram обмежує роботу сайтів.";
+                // Ми в WebView Telegram на iPhone
                 openBtn.innerText = "ЯК ВІДКРИТИ";
-                openBtn.onclick = function(e) {
+                openBtn.onclick = (e) => {
                     e.preventDefault();
-                    iosOverlay.style.display = 'block';
+                    document.getElementById('ios-overlay').style.display = 'block';
                 };
             } else {
-                // Якщо користувач вже в Safari (вбудований браузер вимкнено)
-                statusText.innerText = "Ви вже у безпечному браузері.";
-                openBtn.innerText = "ПЕРЕЙТИ ДО САЙТУ";
-                openBtn.onclick = function() {
-                    window.location.href = fullTargetUrl;
-                };
-                // Можна навіть зробити авто-перехід через 1 секунду
-                setTimeout(() => { window.location.href = fullTargetUrl; }, 1000);
+                // Ми вже в Safari (вбудований браузер вимкнено)
+                mainTitle.innerText = "Зачекайте...";
+                statusText.innerText = "Перенаправляємо на сайт...";
+                openBtn.onclick = () => { window.location.href = fullTargetUrl; };
+                setTimeout(() => { window.location.href = fullTargetUrl; }, 500);
             }
         } else {
-            statusText.innerText = "Натисніть кнопку нижче.";
-            openBtn.onclick = function() {
-                window.location.href = fullTargetUrl;
-            };
+            // Для ПК
+            openBtn.onclick = () => { window.location.href = fullTargetUrl; };
         }
     };
 </script>
-
 </body>
 </html>
