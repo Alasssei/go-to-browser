@@ -58,13 +58,26 @@
 
     window.onload = function() {
         if (isAndroid) {
-            // УНІВЕРСАЛЬНИЙ INTENT (без прив'язки до Chrome)
-            // action=android.intent.action.VIEW відкриє браузер за замовчуванням
-            const intentUrl = `intent://${cleanUrl}#Intent;scheme=https;action=android.intent.action.VIEW;end`;
+            statusText.innerText = "Відкриваємо у браузері...";
             
-            openBtn.onclick = () => { window.location.href = intentUrl; };
-            setTimeout(() => { window.location.href = intentUrl; }, 500);
+            // Пріоритет - Chrome (найстабільніший для сесій)
+            const chromeIntent = `intent://${cleanUrl}#Intent;scheme=https;action=android.intent.action.VIEW;package=com.android.chrome;end`;
+            // Запасний варіант - будь-який браузер
+            const genericIntent = `intent://${cleanUrl}#Intent;scheme=https;action=android.intent.action.VIEW;end`;
 
+            const tryOpen = () => {
+                // Намагаємося відкрити в Chrome
+                window.location.href = chromeIntent;
+                
+                // Якщо через 1.5 сек нічого не сталося (Chrome немає), пробуємо будь-який
+                setTimeout(() => {
+                    window.location.href = genericIntent;
+                }, 1500);
+            };
+
+            openBtn.onclick = tryOpen;
+            setTimeout(tryOpen, 500);
+        }
         } else if (isIOS) {
             if (isTelegram) {
                 // Ми в WebView Telegram на iPhone
