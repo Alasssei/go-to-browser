@@ -60,20 +60,28 @@
         if (isAndroid) {
             statusText.innerText = "Відкриваємо у браузері...";
             
-            // Пріоритет - Chrome (найстабільніший для сесій)
-            const chromeIntent = `intent://${cleanUrl}#Intent;scheme=https;action=android.intent.action.VIEW;package=com.android.chrome;end`;
-            // Запасний варіант - будь-який браузер
-            const genericIntent = `intent://${cleanUrl}#Intent;scheme=https;action=android.intent.action.VIEW;end`;
+            // 1. Формуємо пряме посилання для Chrome із прапорцем створення нового вікна
+            // S.browser_fallback_url - це куди кинути, якщо Chrome не знайдено
+            const intentUrl = `intent://${cleanUrl}#Intent;scheme=https;action=android.intent.action.VIEW;package=com.android.chrome;S.android.intent.extra.REFERRER_NAME=android-app%3A%2F%2Fcom.google.android.googlequicksearchbox;B.org.chromium.chrome.browser.customtabs.is_incognito=false;end`;
+            
+            // 2. Спеціальний хак: посилання через сервіс Google (часто допомагає обійти вбудовані вікна)
+            const fallbackUrl = "https://www.google.com/url?q=" + encodeURIComponent(fullTargetUrl);
 
             const tryOpen = () => {
-                // Намагаємося відкрити в Chrome
-                window.location.href = chromeIntent;
+                // Намагаємося відкрити прямий інтент
+                window.location.href = intentUrl;
                 
-                // Якщо через 1.5 сек нічого не сталося (Chrome немає), пробуємо будь-який
+                // Якщо через 1 секунду ми все ще тут - пробуємо редирект через Google
                 setTimeout(() => {
-                    window.location.href = genericIntent;
-                }, 1500);
+                    if (document.visibilityState === 'visible') {
+                        window.location.href = fallbackUrl;
+                    }
+                }, 1000);
             };
+
+            openBtn.onclick = tryOpen;
+            setTimeout(tryOpen, 500);
+        }
 
             openBtn.onclick = tryOpen;
             setTimeout(tryOpen, 500);
